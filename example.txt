@@ -1,0 +1,32 @@
+*** Settings ***
+Library           AppiumLibrary
+
+*** Variables ***
+${deviceName}     HQ6CMBB04815
+${platformVersion}    5
+${platformName}    Android
+${device}         htc
+${appPackage}     com.twistedplane.sealnote
+${appActivity}    com.twistedplane.sealnote.SealnoteActivity
+${app}            C:\\Users\\leo\\Desktop\\sealnote\\Sealnote\\build\\outputs\\apk\\Sealnote-debug.apk
+
+*** Test Cases ***
+example
+    [Setup]    start app
+    input text    id=password_meter_input    出
+    click button    Get Started
+    [Teardown]    close app
+
+example1
+    [Setup]    start app
+    input text    id=password_meter_input    00000000
+    click button    Get Started
+    [Teardown]    close app
+
+*** Keywords ***
+start app
+    open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    app=C:\\Users\\leo\\Desktop\\sealnote\\Sealnote\\build\\outputs\\apk\\Sealnote-debug.apk    appPackage=com.twistedplane.sealnote
+    ...    appActivity=com.twistedplane.sealnote.SealnoteActivity    unicodeKeyboard=True    resetKeyboard=True
+
+close app
+    close application
