@@ -1,0 +1,71 @@
+*** Settings ***
+Library           AppiumLibrary
+
+*** Variables ***
+
+*** Test Cases ***
+example
+    [Setup]    start app
+    input text    id=password_meter_input    出
+    click button    Get Started
+    [Teardown]    close app
+
+example1
+    [Setup]    start app
+    input text    id=password_meter_input    00000000
+    click button    Get Started
+    [Teardown]    close app
+
+example2
+    [Setup]    open app
+    input text    id=password_meter_input    00000000
+    click button    Show Notes
+    [Teardown]    close app
+
+建立帳戶
+    [Setup]    start app
+    input text    id=password_meter_input    00000000
+    click button    Get Started
+    close app
+    open app
+    input text    id=password_meter_input    00000000
+    click button    Show Notes
+    wait until element is visible    com.twistedplane.sealnote:id/create_note_button    3s
+    [Teardown]    close app
+
+Invalid password
+    [Setup]    open app
+    input text    id=password_meter_input    00000001
+    click button    Show Notes
+    wait until page contains element    //*[@text="Invalid password!"]    3s
+    [Teardown]    close app
+
+建立 new plain text
+    [Setup]    open app
+    input text    id=password_meter_input    123
+    click button    Show Notes
+    click element    id=action_new_note
+    click text    Plain Text
+    input text    id=note_activity_title    this is plain text title
+    input text    id=note_activity_note    this is plain text Note
+    [Teardown]    close app
+
+建立 new credit card note
+    [Setup]    open app
+    input text    id=password_meter_input    123
+    click button    Show Notes
+    click element    id=action_new_note
+    click text    Card Details
+    [Teardown]    close app
+
+*** Keywords ***
+start app
+    open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    app=C:\\Users\\leo\\Desktop\\stv\\STV_Sealnote\\Sealnote-debug.apk    appPackage=com.twistedplane.sealnote
+    ...    appActivity=com.twistedplane.sealnote.SealnoteActivity    unicodeKeyboard=True    resetKeyboard=True
+
+close app
+    close application
+
+open app
+    open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    appPackage=com.twistedplane.sealnote    appActivity=com.twistedplane.sealnote.SealnoteActivity
+    ...    unicodeKeyboard=True    resetKeyboard=True    noReset=true
