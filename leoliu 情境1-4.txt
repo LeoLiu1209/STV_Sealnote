@@ -52,10 +52,24 @@ Invalid password
 
 建立 new credit card note
     [Setup]    open app
-    input text    id=password_meter_input    123
+    input text    id=password_meter_input    1
     click button    Show Notes
+    wait until element is visible    id=action_new_note    3s
     click element    id=action_new_note
     click text    Card Details
+    input text    id=note_card_name    visa
+    input text    id=note_card_number    4556538595974329
+    input text    id=note_card_valid_from    06/16
+    input text    id=note_card_valid_upto    06/18
+    input text    id=note_card_cvv    742
+    click element    id=action_save_note
+    [Teardown]    close app
+
+xpath example
+    [Setup]    open app
+    input text    id=password_meter_input    1
+    click button    Show Notes
+    click element    xpath=//android.widget.TextView[@index= '0']
     [Teardown]    close app
 
 *** Keywords ***
