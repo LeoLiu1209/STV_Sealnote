@@ -1,75 +1,301 @@
 *** Settings ***
 Library           AppiumLibrary
+Library           String
+Library           pySURF.py
 
 *** Variables ***
+${Name_on_Card}    ${EMPTY}
 
 *** Test Cases ***
 example
-    [Setup]    start app
-    input text    id=password_meter_input    出
-    click button    Get Started
+    [Setup]    open app
+    sleep    1s
+    input text    id=password_meter_input    456
+    click button    Show Notes
+    sleep    3s
+    Get Element Attribute    xpath=//android.widget.LinearLayout[@instance='3']    style
     [Teardown]    close app
 
 example1
-    [Setup]    start app
-    input text    id=password_meter_input    00000000
-    click button    Get Started
-    [Teardown]    close app
+    [Setup]
+    ${string}    Set Variable    134 VISA/****-5608
+    @{words}=    split string    ${string}
+    log    @{words}[0]
+    [Teardown]
 
 example2
     [Setup]    open app
-    input text    id=password_meter_input    00000000
-    click button    Show Notes
     [Teardown]    close app
 
-建立帳戶
+建立帳戶輸入數字
     [Setup]    start app
-    input text    id=password_meter_input    00000000
-    click button    Get Started
+    register for account in digit
     close app
-    open app
-    input text    id=password_meter_input    00000000
-    click button    Show Notes
-    wait until element is visible    com.twistedplane.sealnote:id/create_note_button    3s
+    wait until element is visible    id=create_note_button    3s
+    [Teardown]    close app
+
+建立帳戶輸入英文
+    [Setup]    start app
+    register for account in eng
+    wait until element is visible    id=create_note_button    3s
+    [Teardown]    close app
+
+建立帳戶輸入英文和數字
+    [Setup]    start app
+    register for account in eng and digit
+    wait until element is visible    id=create_note_button    3s
+    [Teardown]    close app
+
+建立帳戶輸入非數字和英文
+    [Setup]    start app
+    register for account in neither eng nor digit
+    wait until element is visible    id=create_note_button    3s
+    [Teardown]    close app
+
+建立帳戶密碼未輸入
+    [Setup]    start app
+    click button    Get Started
+    wait until element is visible    id=message    3s
+    ${result}    get text    id=message
+    should be equal    Invalid password!    ${result}
+    [Teardown]    close app
+
+正確密碼登入
+    [Setup]    start app
+    register for account in digit
+    login
+    wait until element is visible    id=create_note_button    3s
     [Teardown]    close app
 
 Invalid password
-    [Setup]    open app
+    [Setup]    open app with uiauto2
     input text    id=password_meter_input    00000001
+    click button    Show Notes
+    wait until page contains element    //*[@text="Invalid password!"]    3s
+    sleep    3s
+    input text    id=password_meter_input    ${EMPTY}
     click button    Show Notes
     wait until page contains element    //*[@text="Invalid password!"]    3s
     [Teardown]    close app
 
 建立 new plain text
     [Setup]    open app
-    input text    id=password_meter_input    123
-    click button    Show Notes
-    click element    id=action_new_note
-    click text    Plain Text
-    input text    id=note_activity_title    this is plain text title
-    input text    id=note_activity_note    this is plain text Note
+    login
+    create plain text
+    assert for plain text
     [Teardown]    close app
 
 建立 new credit card note
     [Setup]    open app
-    input text    id=password_meter_input    1
-    click button    Show Notes
+    login
+    wait until element is visible    id=action_new_note    3s
+    credit card detail
+    assert for card detail
+    [Teardown]    close app
+
+credit card type
+    [Setup]    open app
+    login
     wait until element is visible    id=action_new_note    3s
     click element    id=action_new_note
     click text    Card Details
-    input text    id=note_card_name    visa
     input text    id=note_card_number    4556538595974329
-    input text    id=note_card_valid_from    06/16
-    input text    id=note_card_valid_upto    06/18
-    input text    id=note_card_cvv    742
-    click element    id=action_save_note
+    capture page screenshot    ${CURDIR}/shotforvisa.png
+    ${result}    assertvisa    shotforvisa.png
+    should be true    ${result}
+    clear text    id=note_card_number
+    input text    id=note_card_number    5556451520253818
+    capture page screenshot    ${CURDIR}/shotformaster.png
+    ${result}    assertmaster    shotformaster.png
+    should be true    ${result}
+    clear text    id=note_card_number
+    input text    id=note_card_number    376868109130613
+    capture page screenshot    ${CURDIR}/shotforexpress.png
+    ${result}    assertexpress    shotforexpress.png
+    should be true    ${result}
     [Teardown]    close app
 
-xpath example
+建立 new login detail
     [Setup]    open app
-    input text    id=password_meter_input    1
+    login
+    wait until element is visible    id=action_new_note    3s
+    create login detail
+    assert for login detail
+    [Teardown]    close app
+
+Auto save note
+    [Setup]    open app
+    login
+    go to setting
+    click element    xpath=//android.widget.TextView[@text='Autosave notes']
+    element attribute should match    xpath=//android.widget.LinearLayout[@index='1']//android.widget.CheckBox[@index='0']    checked    true
+    sleep    3s
+    click element    id=action_bar_title
+    create plain text for auto save
+    click element    更多選項
+    click text    Settings
+    click element    xpath=//android.widget.TextView[@text='Autosave notes']
+    element attribute should match    xpath=//android.widget.LinearLayout[@index='1']//android.widget.CheckBox[@index='0']    checked    false
+    [Teardown]    close app
+
+Change password
+    [Setup]    open app
+    login
+    go to setting
+    change password
+    close app
+    open app
+    login after change password
+    wait until element is visible    id=action_bar_title    3s
+    [Teardown]    close app
+
+Add new tag
+    [Setup]    open app
+    login after change password
+    click element    id=action_new_note
+    click text    Plain Text
+    input text    id=note_activity_tags    tag1
+    input text    id=note_activity_title    a
+    input text    id=note_activity_note    a
+    click element    id=action_save_note
+    click element    id=action_bar_title
+    sleep    1s
+    wait until element is visible    xpath=//android.widget.TextView[@text='tag1']
+    [Teardown]    close app
+
+rename tag
+    [Setup]    open app
+    login after change password
+    click element    id=action_bar_title
+    click text    tag1
+    click element    更多選項
+    click text    Edit tags
+    click text    tag1
+    clear text    id=input_rename
+    input text    id=input_rename    tag123
+    click button    Rename
+    click element    id=action_bar_title
+    click element    id=action_bar_title
+    page should contain element    xpath=//android.widget.TextView[@text='tag123']
+    [Teardown]    close app
+
+Delete tag
+    [Setup]    open app
+    login after change password
+    click element    id=action_bar_title
+    click text    tag123
+    click element    更多選項
+    click text    Edit tags
+    click element    id=delete_button
+    click button    確定
+    click element    id=action_bar_title
+    click element    id=action_bar_title
+    page should not contain element    xpath=//android.widget.TextView[@text='tag123']
+    [Teardown]    close app
+
+Delete notes
+    [Setup]    open app
+    login after change password
+    sleep    3s
+    long press    xpath=//android.widget.LinearLayout[@instance='3']
+    click element    Delete
+    wait until page does not contain element    xpath=//android.widget.LinearLayout[@instance='4']//android.widget.TextView[@text='A']    3s
+    [Teardown]    close app
+
+Restore notes
+    [Setup]    open app
+    login after change password
+    click element    id=action_bar_title
+    sleep    1s
+    click element    xpath=//android.widget.TextView[@text='Trash']
+    long press    xpath=//android.widget.LinearLayout[@instance='3']
+    click element    Restore
+    click element    id=action_bar_title
+    sleep    1s
+    click element    xpath=//android.widget.TextView[@text='Notes']
+    wait until element is visible    xpath=//android.widget.LinearLayout[@instance='3']//android.widget.TextView[@text='a']    3s
+    [Teardown]    close app
+
+建立 new plain text with no tilte and note
+    [Setup]    open app with uiauto2
+    login after change password
+    create plain text without input
+    wait until page contains element    //*[@text="No point saving an empty note!"]    5s
+    [Teardown]    close app
+
+建立 new credit detail with no tilte and note
+    [Setup]    open app with uiauto2
+    login after change password
+    create card detail without input
+    wait until page contains element    //*[@text="No point saving an empty note!"]    5s
+    [Teardown]    close app
+
+建立 new login detail with no tilte and note
+    [Setup]    open app with uiauto2
+    login after change password
+    create login detail without input
+    wait until page contains element    //*[@text="No point saving an empty note!"]    5s
+    [Teardown]    close app
+
+限制截圖
+    [Setup]    open app
+    login after change password
+    go to setting
+    click element    xpath=//android.widget.TextView[@text='Secure window content']
+    sleep    2s
+    element attribute should match    xpath=//android.widget.CheckBox[@instance='1']    checked    true
+    sleep    3s
+    click element    id=action_bar_title
+    ${passed} =    Run Keyword And Return Status    capture page screenshot    ${CURDIR}/security.png
+    should not be true    ${passed}
+    click element    更多選項
+    click text    Settings
+    click element    xpath=//android.widget.TextView[@text='Secure window content']
+    sleep    2s
+    element attribute should match    xpath=//android.widget.CheckBox[@instance='1']    checked    false
+    sleep    2s
+    click element    id=action_bar_title
+    sleep    1s
+    ${passed} =    Run Keyword And Return Status    capture page screenshot    ${CURDIR}/security.png
+    should be true    ${passed}
+    [Teardown]    close app
+
+分享筆記
+    [Setup]    open app
+    input text    id=password_meter_input    456
     click button    Show Notes
-    click element    xpath=//android.widget.TextView[@index= '0']
+    sleep    3s
+    click element    xpath=//android.widget.LinearLayout[@instance='3']
+    click element    更多選項
+    click text    Share
+    click text    全部顯示
+    scroll    xpath=//android.widget.LinearLayout[@index='0']    xpath=//android.widget.LinearLayout[@index='10']
+    click text    訊息
+    [Teardown]    close app
+
+password timeout
+    [Setup]    open app
+    login after change password
+    go to setting
+    click element    xpath=//android.widget.TextView[@text='Password timeout']
+    click text    10 seconds
+    sleep    11s
+    go back
+    wait until element is visible    id=create_note_button    3s
+    login after change password
+    go to setting
+    click element    xpath=//android.widget.TextView[@text='Password timeout']
+    click text    30 seconds
+    sleep    31s
+    go back
+    wait until element is visible    id=create_note_button    3s
+    login after change password
+    go to setting
+    click element    xpath=//android.widget.TextView[@text='Password timeout']
+    click text    1 minute
+    sleep    61s
+    go back
+    wait until element is visible    id=create_note_button    3s
     [Teardown]    close app
 
 *** Keywords ***
@@ -83,3 +309,135 @@ close app
 open app
     open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    appPackage=com.twistedplane.sealnote    appActivity=com.twistedplane.sealnote.SealnoteActivity
     ...    unicodeKeyboard=True    resetKeyboard=True    noReset=true
+
+open app with uiauto2
+    open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    appPackage=com.twistedplane.sealnote    appActivity=com.twistedplane.sealnote.SealnoteActivity
+    ...    unicodeKeyboard=True    resetKeyboard=True    noReset=true    automationName=uiautomator2
+
+create plain text
+    click element    id=action_new_note
+    click text    Plain Text
+    input text    id=note_activity_title    this is plain text title
+    input text    id=note_activity_note    this is plain text Note
+    sleep    3s
+    click element    id=action_save_note
+    sleep    5s
+
+create plain text for autosave
+    click element    id=action_new_note
+    click text    Plain Text
+    input text    id=note_activity_title    this is plain text title
+    input text    id=note_activity_note    this is plain text Note
+    sleep    3s
+    click element    id=action_bar_title
+    sleep    5s
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    ${note}    get Text    //android.widget.TextView[@instance="1"]
+    should be equal    ${title}    this is plain text title
+    should be equal    ${note}    this is plain text Note
+
+go to setting
+    click element    更多選項
+    click text    Settings
+
+login after change password
+    input text    id=password_meter_input    456
+    click button    Show Notes
+    sleep    3s
+
+register for account in digit
+    input text    id=password_meter_input    1
+    click button    Get Started
+
+login
+    input text    id=password_meter_input    1
+    click button    Show Notes
+
+credit card detail
+    click element    id=action_new_note
+    click text    Card Details
+    input text    note_activity_title    this is credit card title
+    input text    id=note_card_name    visa
+    input text    id=note_card_number    4556538595974329
+    input text    id=note_card_valid_from    06/16
+    input text    id=note_card_valid_upto    06/18
+    input text    id=note_card_cvv    742
+    click element    id=action_save_note
+    sleep    5s
+
+create login detail
+    click element    id=action_new_note
+    click text    Login Details
+    input text    note_activity_title    this is login detail title
+    input text    id=note_login_url    9527@ntut.edu.tw
+    input text    id=note_login_name    iamleo
+    input text    id=note_login_password    9527
+
+assert for login detail
+    ${title}    set variable    this is login detail title
+    ${url}    set variable    9527@ntut.edu.tw
+    ${login_name}    set variable    iamleo
+    ${login_password}    set variable    9527
+    click element    id=action_save_note
+    sleep    5s
+    ${datail_title}    get Text    //android.widget.TextView[@instance="0"]
+    should be equal    ${title}    ${datail_title}
+    ${detail}    get Text    //android.widget.TextView[@instance="1"]
+    @{words}=    split string    ${detail}
+    should be equal    ${url}    @{words}[0]
+    should be equal    ${login_name}    @{words}[2]
+
+change password
+    click text    Change Password
+    input text    id = diag_password_pref_oldPassword    1
+    input text    id = password_meter_input    456
+    input text    id =diag_password_pref_newPasswordConfirm    456
+    click button    Change password
+
+assert for card detail
+    ${Name_on_Card}=    set variable    visa
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should be equal    ${title}    this is credit card title
+    ${name}    get Text    //android.widget.TextView[@instance="1"]
+    ${string}    Set Variable    ${name}
+    @{words}=    split string    ${string}
+    should be equal    ${Name_on_Card}    @{words}[0]
+
+assert for plain text
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    ${note}    get Text    //android.widget.TextView[@instance="1"]
+    should be equal    ${title}    this is plain text title
+    should be equal    ${note}    this is plain text Note
+
+create login detail without input
+    click element    id=action_new_note
+    sleep    2s
+    click text    Login Details
+    sleep    3s
+    click element    id=action_save_note
+
+create card detail without input
+    click element    id=action_new_note
+    sleep    2s
+    click text    Card Details
+    sleep    3s
+    click element    id=action_save_note
+
+create plain text without input
+    click element    id=action_new_note
+    sleep    2s
+    click text    Plain Text
+    sleep    3s
+    click element    id=action_save_note
+
+register for account in eng
+    input text    id=password_meter_input    pwd
+    click button    Get Started
+
+register for account in eng and digit
+    input text    id=password_meter_input    pwd123
+    click button    Get Started
+
+register for account in neither eng nor digit
+    input text    id=password_meter_input    !!@ #!!#![]
+    click button    Get Started
