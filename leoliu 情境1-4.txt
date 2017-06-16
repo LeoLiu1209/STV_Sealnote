@@ -198,8 +198,12 @@ Delete notes
     login after change password
     sleep    3s
     long press    xpath=//android.widget.LinearLayout[@instance='3']
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
     click element    Delete
-    wait until page does not contain element    xpath=//android.widget.LinearLayout[@instance='4']//android.widget.TextView[@text='A']    3s
+    click element    id=action_bar_title
+    click element    xpath=//android.widget.TextView[@text='Trash']
+    ${checkgarbage}    get Text    //android.widget.TextView[@instance="0"]
+    should be equal    ${title}    ${checkgarbage}
     [Teardown]    close app
 
 Restore notes
@@ -298,10 +302,62 @@ password timeout
     wait until element is visible    id=create_note_button    3s
     [Teardown]    close app
 
+Logout
+    [Setup]    open app
+    login
+    click element    更多選項
+    click text    Logout
+    wait until element is visible    id=password_action_button    3s
+    [Teardown]    close app
+
+edit note
+    [Setup]    open app
+    login
+    sleep    3s
+    click element    xpath=//android.widget.LinearLayout[@instance='3']
+    sleep    2s
+    clear text    id=note_activity_title
+    clear text    id=note_activity_note
+    input text    id=note_activity_title    a123
+    input text    id=note_activity_note    a456
+    click element    id=action_save_note
+    sleep    2s
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    ${note}    get Text    //android.widget.TextView[@instance="1"]
+    should be equal    ${title}    a123
+    should be equal    ${note}    a456
+    [Teardown]    close app
+
+edit credit card detail
+    [Setup]    open app
+    login
+    sleep    3s
+    click element    xpath=//android.widget.LinearLayout[@instance='3']
+    sleep    3s
+    clear text    id=note_activity_title
+    input text    id=note_activity_title    a123
+    click element    id=action_save_note
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should be equal    ${title}    a123
+    [Teardown]    close app
+
+edit login detail
+    [Setup]    open app
+    login
+    sleep    3s
+    click element    xpath=//android.widget.LinearLayout[@instance='3']
+    sleep    3s
+    clear text    id=note_activity_title
+    input text    id=note_activity_title    a123
+    click element    id=action_save_note
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should be equal    ${title}    a123
+    [Teardown]    close app
+
 *** Keywords ***
 start app
     open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    app=C:\\Users\\leo\\Desktop\\stv\\STV_Sealnote\\Sealnote-debug.apk    appPackage=com.twistedplane.sealnote
-    ...    appActivity=com.twistedplane.sealnote.SealnoteActivity    unicodeKeyboard=True    resetKeyboard=True
+    ...    appActivity=com.twistedplane.sealnote.SealnoteActivity    resetKeyboard=True    noReset=true
 
 close app
     close application
