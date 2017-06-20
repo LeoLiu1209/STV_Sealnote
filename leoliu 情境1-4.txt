@@ -7,30 +7,9 @@ Library           pySURF.py
 ${Name_on_Card}    ${EMPTY}
 
 *** Test Cases ***
-example
-    [Setup]    open app
-    sleep    1s
-    input text    id=password_meter_input    456
-    click button    Show Notes
-    sleep    3s
-    Get Element Attribute    xpath=//android.widget.LinearLayout[@instance='3']    style
-    [Teardown]    close app
-
-example1
-    [Setup]
-    ${string}    Set Variable    134 VISA/****-5608
-    @{words}=    split string    ${string}
-    log    @{words}[0]
-    [Teardown]
-
-example2
-    [Setup]    open app
-    [Teardown]    close app
-
 建立帳戶輸入數字
     [Setup]    start app
     register for account in digit
-    close app
     wait until element is visible    id=create_note_button    3s
     [Teardown]    close app
 
@@ -63,19 +42,23 @@ example2
 正確密碼登入
     [Setup]    start app
     register for account in digit
+    close app
+    open app
     login
     wait until element is visible    id=create_note_button    3s
     [Teardown]    close app
 
 Invalid password
-    [Setup]    open app with uiauto2
+    [Setup]    open app
     input text    id=password_meter_input    00000001
     click button    Show Notes
-    wait until page contains element    //*[@text="Invalid password!"]    3s
-    sleep    3s
+    Comment    wait until page contains element    //*[@text="Invalid password!"]    2s
+    wait until element is visible    id=password_action_button    3s
+    sleep    3S
     input text    id=password_meter_input    ${EMPTY}
     click button    Show Notes
-    wait until page contains element    //*[@text="Invalid password!"]    3s
+    wait until element is visible    id=password_action_button    3s
+    Comment    wait until page contains element    //*[@text="Invalid password!"]    2s
     [Teardown]    close app
 
 建立 new plain text
@@ -85,12 +68,63 @@ Invalid password
     assert for plain text
     [Teardown]    close app
 
+建立 new plain text with no tilte and note
+    [Setup]    open app
+    login
+    create plain text without input
+    sleep    3s
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should not be equal    ${title}    ${EMPTY}
+    [Teardown]    close app
+
+edit note
+    [Setup]    open app
+    login after change password
+    login
+    sleep    3s
+    click element    xpath=//android.widget.LinearLayout[@instance='3']
+    sleep    2s
+    clear text    id=note_activity_title
+    clear text    id=note_activity_note
+    input text    id=note_activity_title    a123
+    input text    id=note_activity_note    a456
+    click element    id=action_save_note
+    sleep    2s
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    ${note}    get Text    //android.widget.TextView[@instance="1"]
+    should be equal    ${title}    a123
+    should be equal    ${note}    a456
+    [Teardown]    close app
+
 建立 new credit card note
     [Setup]    open app
     login
     wait until element is visible    id=action_new_note    3s
     credit card detail
     assert for card detail
+    [Teardown]    close app
+
+建立 new credit detail with no tilte and note
+    [Setup]    open app
+    login
+    create card detail without input
+    sleep    3s
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should not be equal    ${title}    ${EMPTY}
+    [Teardown]    close app
+
+edit credit card detail
+    [Setup]    open app
+    login
+    sleep    3s
+    click element    xpath=//android.widget.LinearLayout[@instance='3']
+    sleep    3s
+    clear text    id=note_activity_title
+    input text    id=note_activity_title    a123
+    sleep    3s
+    click element    id=action_save_note
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should be equal    ${title}    a123
     [Teardown]    close app
 
 credit card type
@@ -123,6 +157,28 @@ credit card type
     assert for login detail
     [Teardown]    close app
 
+建立 new login detail with no tilte and note
+    [Setup]    open app
+    login
+    create login detail without input
+    sleep    3s
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should not be equal    ${title}    ${EMPTY}
+    [Teardown]    close app
+
+edit login detail
+    [Setup]    open app
+    login
+    sleep    3s
+    click element    xpath=//android.widget.LinearLayout[@instance='3']
+    sleep    3s
+    clear text    id=note_activity_title
+    input text    id=note_activity_title    a123
+    click element    id=action_save_note
+    ${title}    get Text    //android.widget.TextView[@instance="0"]
+    should be equal    ${title}    a123
+    [Teardown]    close app
+
 Auto save note
     [Setup]    open app
     login
@@ -152,11 +208,12 @@ Change password
 Add new tag
     [Setup]    open app
     login after change password
+    sleep    3s
     click element    id=action_new_note
     click text    Plain Text
     input text    id=note_activity_tags    tag1
-    input text    id=note_activity_title    a
-    input text    id=note_activity_note    a
+    input text    id=note_activity_title    a123
+    input text    id=note_activity_note    a123
     click element    id=action_save_note
     click element    id=action_bar_title
     sleep    1s
@@ -166,6 +223,7 @@ Add new tag
 rename tag
     [Setup]    open app
     login after change password
+    sleep    3s
     click element    id=action_bar_title
     click text    tag1
     click element    更多選項
@@ -182,6 +240,7 @@ rename tag
 Delete tag
     [Setup]    open app
     login after change password
+    sleep    3s
     click element    id=action_bar_title
     click text    tag123
     click element    更多選項
@@ -201,6 +260,7 @@ Delete notes
     ${title}    get Text    //android.widget.TextView[@instance="0"]
     click element    Delete
     click element    id=action_bar_title
+    sleep    3s
     click element    xpath=//android.widget.TextView[@text='Trash']
     ${checkgarbage}    get Text    //android.widget.TextView[@instance="0"]
     should be equal    ${title}    ${checkgarbage}
@@ -209,36 +269,19 @@ Delete notes
 Restore notes
     [Setup]    open app
     login after change password
+    sleep    3s
     click element    id=action_bar_title
-    sleep    1s
+    sleep    3s
     click element    xpath=//android.widget.TextView[@text='Trash']
     long press    xpath=//android.widget.LinearLayout[@instance='3']
+    ${restoreText}    get text    //android.widget.LinearLayout[@instance='0']//android.widget.TextView[@index='0']
     click element    Restore
     click element    id=action_bar_title
-    sleep    1s
+    sleep    3s
     click element    xpath=//android.widget.TextView[@text='Notes']
-    wait until element is visible    xpath=//android.widget.LinearLayout[@instance='3']//android.widget.TextView[@text='a']    3s
-    [Teardown]    close app
-
-建立 new plain text with no tilte and note
-    [Setup]    open app with uiauto2
-    login after change password
-    create plain text without input
-    wait until page contains element    //*[@text="No point saving an empty note!"]    5s
-    [Teardown]    close app
-
-建立 new credit detail with no tilte and note
-    [Setup]    open app with uiauto2
-    login after change password
-    create card detail without input
-    wait until page contains element    //*[@text="No point saving an empty note!"]    5s
-    [Teardown]    close app
-
-建立 new login detail with no tilte and note
-    [Setup]    open app with uiauto2
-    login after change password
-    create login detail without input
-    wait until page contains element    //*[@text="No point saving an empty note!"]    5s
+    sleep    5s
+    ${result}    get text    //android.widget.LinearLayout[@instance='0']//android.widget.TextView[@index='0']
+    should be equal    ${result}    ${restoreText}
     [Teardown]    close app
 
 限制截圖
@@ -264,113 +307,61 @@ Restore notes
     should be true    ${passed}
     [Teardown]    close app
 
-分享筆記
-    [Setup]    open app
-    input text    id=password_meter_input    456
-    click button    Show Notes
-    sleep    3s
-    click element    xpath=//android.widget.LinearLayout[@instance='3']
-    click element    更多選項
-    click text    Share
-    click text    全部顯示
-    scroll    xpath=//android.widget.LinearLayout[@index='0']    xpath=//android.widget.LinearLayout[@index='10']
-    click text    訊息
-    [Teardown]    close app
-
 password timeout
     [Setup]    open app
     login after change password
     go to setting
     click element    xpath=//android.widget.TextView[@text='Password timeout']
     click text    10 seconds
-    sleep    11s
+    sleep    10s
     go back
-    wait until element is visible    id=create_note_button    3s
+    sleep    3s
+    wait until element is visible    id=password_action_button    3s
     login after change password
     go to setting
     click element    xpath=//android.widget.TextView[@text='Password timeout']
     click text    30 seconds
-    sleep    31s
+    sleep    30s
     go back
-    wait until element is visible    id=create_note_button    3s
+    sleep    3s
+    wait until element is visible    id=password_action_button    3s
     login after change password
     go to setting
     click element    xpath=//android.widget.TextView[@text='Password timeout']
     click text    1 minute
-    sleep    61s
+    sleep    60s
     go back
-    wait until element is visible    id=create_note_button    3s
+    sleep    3s
+    wait until element is visible    id=password_action_button    3s
     [Teardown]    close app
 
 Logout
     [Setup]    open app
-    login
+    login after change password
+    sleep    3s
     click element    更多選項
     click text    Logout
     wait until element is visible    id=password_action_button    3s
     [Teardown]    close app
 
-edit note
-    [Setup]    open app
-    login
-    sleep    3s
-    click element    xpath=//android.widget.LinearLayout[@instance='3']
-    sleep    2s
-    clear text    id=note_activity_title
-    clear text    id=note_activity_note
-    input text    id=note_activity_title    a123
-    input text    id=note_activity_note    a456
-    click element    id=action_save_note
-    sleep    2s
-    ${title}    get Text    //android.widget.TextView[@instance="0"]
-    ${note}    get Text    //android.widget.TextView[@instance="1"]
-    should be equal    ${title}    a123
-    should be equal    ${note}    a456
-    [Teardown]    close app
-
-edit credit card detail
-    [Setup]    open app
-    login
-    sleep    3s
-    click element    xpath=//android.widget.LinearLayout[@instance='3']
-    sleep    3s
-    clear text    id=note_activity_title
-    input text    id=note_activity_title    a123
-    click element    id=action_save_note
-    ${title}    get Text    //android.widget.TextView[@instance="0"]
-    should be equal    ${title}    a123
-    [Teardown]    close app
-
-edit login detail
-    [Setup]    open app
-    login
-    sleep    3s
-    click element    xpath=//android.widget.LinearLayout[@instance='3']
-    sleep    3s
-    clear text    id=note_activity_title
-    input text    id=note_activity_title    a123
-    click element    id=action_save_note
-    ${title}    get Text    //android.widget.TextView[@instance="0"]
-    should be equal    ${title}    a123
-    [Teardown]    close app
-
 *** Keywords ***
 start app
     open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    app=C:\\Users\\leo\\Desktop\\stv\\STV_Sealnote\\Sealnote-debug.apk    appPackage=com.twistedplane.sealnote
-    ...    appActivity=com.twistedplane.sealnote.SealnoteActivity    resetKeyboard=True    noReset=true
+    ...    appActivity=com.twistedplane.sealnote.SealnoteActivity    unicodeKeyboard=True    resetKeyboard=True    newCommandTimeout=3000
 
 close app
     close application
 
 open app
     open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    appPackage=com.twistedplane.sealnote    appActivity=com.twistedplane.sealnote.SealnoteActivity
-    ...    unicodeKeyboard=True    resetKeyboard=True    noReset=true
+    ...    unicodeKeyboard=True    resetKeyboard=True    noReset=true    newCommandTimeout=3000
 
 open app with uiauto2
     open application    http://localhost:4723/wd/hub    platformName=Android    platformVersion=5    deviceName=HQ6CMBB04815    appPackage=com.twistedplane.sealnote    appActivity=com.twistedplane.sealnote.SealnoteActivity
     ...    unicodeKeyboard=True    resetKeyboard=True    noReset=true    automationName=uiautomator2
 
 create plain text
+    sleep    3s
     click element    id=action_new_note
     click text    Plain Text
     input text    id=note_activity_title    this is plain text title
@@ -393,6 +384,7 @@ create plain text for autosave
     should be equal    ${note}    this is plain text Note
 
 go to setting
+    sleep    3s
     click element    更多選項
     click text    Settings
 
@@ -402,6 +394,7 @@ login after change password
     sleep    3s
 
 register for account in digit
+    sleep    3s
     input text    id=password_meter_input    1
     click button    Get Started
 
@@ -466,6 +459,7 @@ assert for plain text
     should be equal    ${note}    this is plain text Note
 
 create login detail without input
+    sleep    3s
     click element    id=action_new_note
     sleep    2s
     click text    Login Details
@@ -473,13 +467,15 @@ create login detail without input
     click element    id=action_save_note
 
 create card detail without input
+    sleep    3s
     click element    id=action_new_note
-    sleep    2s
+    sleep    3s
     click text    Card Details
     sleep    3s
     click element    id=action_save_note
 
 create plain text without input
+    sleep    3s
     click element    id=action_new_note
     sleep    2s
     click text    Plain Text
@@ -497,3 +493,4 @@ register for account in eng and digit
 register for account in neither eng nor digit
     input text    id=password_meter_input    !!@ #!!#![]
     click button    Get Started
+
