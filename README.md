@@ -1,16 +1,14 @@
 # STV_Sealnote
 HW for Software testing and Verification in Android
 ## Test tool
-[Appium](http://appium.io/)
+[Appium](http://appium.io/)</br>
+    Appium is an open source test automation framework for use with native, hybrid and mobile web apps.
+    It drives iOS, Android, and Windows apps using the WebDriver protocol.
 
-    Appium is an open source test automation framework for use with native, hybrid and mobile web apps. It drives iOS, Android, and Windows apps using the WebDriver protocol.
-
-[Robotframework](http://robotframework.org/)
-
+[Robotframework](http://robotframework.org/)</br> 
     Robot Framework is a generic test automation framework for acceptance testing and acceptance test-driven development
 
-[AppiumLibrary](http://jollychang.github.io/robotframework-appiumlibrary/doc/AppiumLibrary.html)
-    
+[AppiumLibrary](http://jollychang.github.io/robotframework-appiumlibrary/doc/AppiumLibrary.html)</br> 
     AppiumLibrary is a App testing library for Robot Framework.
 
 ## Demo video
