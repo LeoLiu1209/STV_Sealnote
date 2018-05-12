@@ -1,6 +1,6 @@
 # STV_Sealnote
 Homework for Software testing and Verification in Android App.  
-We have to write an automation testing for Sealnote and design test plan and strategy in different scenario.  
+We have to write automation testing for Sealnote and design test plan and strategy in different scenario.  
 In addition, we put the doc in the document folder.  
   [document link right here](https://github.com/LeoLiu1209/STV_Sealnote/tree/master/document)
 *  Software Test Plan
